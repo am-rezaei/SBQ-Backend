@@ -1,0 +1,14 @@
+deploy:
+  stage: deploy
+  script:
+  - apt-get update -qq
+  - apt-get install -qq git
+  - apt-get install -qq rsync
+  # Setup SSH deploy keys
+  - 'which ssh-agent || ( apt-get install -qq openssh-client )'
+  - eval $(ssh-agent -s)
+  - ssh-add <(echo "$SSH_PRIVATE_KEY")
+  - mkdir -p ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  - rsync -r . ubuntu@3.95.15.232:/home/ubuntu
+  - ssh ubuntu@3.95.15.232  'sudo systemctl restart backend'
